@@ -10,20 +10,15 @@ class SmartMeter():
 
         self._P_quarter_hourly_data = pd.DataFrame([])
 
-    def step(self, time, *P_behind_meter):
-        P_grid = sum(P_behind_meter)
-        self._P_quarter_hourly_data[time, 'P'] = P_grid
+    def step(self, time, **P_behind_meter):
+        P_grid = sum(P_behind_meter.values())
+        self._P_quarter_hourly_data.loc[time, 'P'] = P_grid
 
         return {'P_Grid': P_grid}
 
     def retrieve_data(self):
-        return self._P_quarter_hourly_data # seach for / implement 'pop method' which empties dataframe but returns the values
+        raise NotImplemented('retrieve_data not yet implemented')
+        # return self._P_quarter_hourly_data # seach for / implement 'pop method' which empties dataframe but returns the values
         
 
-class GridOperator():
-    def __init__(self, *smart_meter_models):
-        self.smart_meter_models = smart_meter_models
 
-    def step(self, time, inputs):
-        for smart_meter_model in self.smart_meter_models:
-            self.smart_meter_data = smart_meter_model.retrieve_data()
