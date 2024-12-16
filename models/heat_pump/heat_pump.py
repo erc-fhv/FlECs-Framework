@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import CoolProp.CoolProp as CP
 
 class HeatPumpEventBased():
     def __init__(self, name, delta_t=60, eta=0.5, P_el_nom=2000) -> None:
@@ -65,3 +66,130 @@ class HeatPumpWControlEventBased():
 
         return {'next_exec_time': next_exec_time, 'P_el':P_el, 'dot_Q_hp':dot_Q_hp}
         
+
+class HeatPumpCoolingcircle():
+    def __init__(self, name, delta_t=60, eta=0.7414, P_el_nom=2000, fluid='R290') -> None:
+        # Parameter
+        self.delta_t = delta_t
+
+        self.eta      = eta
+        self.P_el_nom = P_el_nom # nominal Power
+        self.fluid    = fluid 
+
+        # inputs outputs 
+        self.inputs  = ['state', 'T_source', 'T_sink']
+        self.outputs = ['cop', 'P_el', 'dot_Q_hp']
+        self.name = name
+
+    def step(self, time, state, T_source, T_sink):
+        if state == 'on':
+
+            P_el = self.P_el_nom
+            x1=1
+            T1=T_source # °C
+            x3=0
+            T3=T_sink   # °C
+
+            # State 1:
+            h1=CP.PropsSI('H','T',T1+273.15,'Q',x1,self.fluid)
+            p1=CP.PropsSI('P','T',T1+273.15,'Q',x1,self.fluid)
+            s1=CP.PropsSI('S','T',T1+273.15,'Q',x1,self.fluid)
+
+            # State 3:
+            h3=CP.PropsSI('H','T',T3+273.15,'Q',x3,self.fluid)
+            p3=CP.PropsSI('P','T',T3+273.15,'Q',x3,self.fluid)
+            s3=CP.PropsSI('S','T',T3+273.15,'Q',x3,self.fluid)
+            
+            # State 2:
+            p2=p3 # (2 -> 3: heat exchange with constant pressure)
+            h2s=CP.PropsSI('H','P',p2,'S',s1,self.fluid)
+            h2=h1+(h2s-h1)/self.eta
+            T2=CP.PropsSI('T','P',p2,'H',h2,self.fluid)
+            s2=CP.PropsSI('S','P',p2,'H',h2,self.fluid)
+
+            # State 4:
+            p4=p1 # (4 -> 1: heat exchange with constant pressure)
+            h4=h3 # (3 -> 4: expansion with constant enthalpy)
+            T4=CP.PropsSI('T','P',p4,'H',h4,self.fluid)
+            s4=CP.PropsSI('S','P',p4,'H',h4,self.fluid)
+
+            m1 = P_el / (h2-h1)
+
+            dot_Q_hp = m1 * (h2-h3)
+
+            cop = dot_Q_hp / P_el
+            next_exec_time = pd.Timedelta(60, 'sec') + time
+
+        else:
+            P_el = 0
+            cop = 0
+            dot_Q_hp = P_el * cop
+            next_exec_time = pd.Timedelta(1, 'day') + time
+            
+        return {'next_exec_time': next_exec_time, 'cop':cop, 'P_el':P_el, 'dot_Q_hp':dot_Q_hp}
+    
+
+class HeatPumpCoolingcircleWControl():
+    def __init__(self, name, delta_t=60, eta=0.7414, dot_Q_hp_nom=15000, P_el_max=5700, P_el_min=1000, fluid='R290') -> None:
+        # Parameter
+        self.delta_t = delta_t
+
+        self.eta      = eta
+        self.dot_Q_hp_nom = dot_Q_hp_nom # nominal hating power
+        self.P_el_max = P_el_max
+        self.P_el_min = P_el_min
+        self.fluid    = fluid 
+
+        # inputs outputs 
+        self.inputs  = ['state', 'T_source', 'T_sink']
+        self.outputs = ['cop', 'P_el', 'dot_Q_hp']
+        self.name = name
+
+    def step(self, time, state, T_source, T_sink):
+        if state == 'on':
+
+            dot_Q_hp_nom = self.dot_Q_hp_nom
+            x1=1
+            T1=T_source # °C
+            x3=0
+            T3=T_sink   # °C
+
+            # State 1:
+            h1=CP.PropsSI('H','T',T1+273.15,'Q',x1,self.fluid)
+            p1=CP.PropsSI('P','T',T1+273.15,'Q',x1,self.fluid)
+            s1=CP.PropsSI('S','T',T1+273.15,'Q',x1,self.fluid)
+
+            # State 3:
+            h3=CP.PropsSI('H','T',T3+273.15,'Q',x3,self.fluid)
+            p3=CP.PropsSI('P','T',T3+273.15,'Q',x3,self.fluid)
+            s3=CP.PropsSI('S','T',T3+273.15,'Q',x3,self.fluid)
+            
+            # State 2:
+            p2=p3 # (2 -> 3: heat exchange with constant pressure)
+            h2s=CP.PropsSI('H','P',p2,'S',s1,self.fluid)
+            h2=h1+(h2s-h1)/self.eta
+            T2=CP.PropsSI('T','P',p2,'H',h2,self.fluid)
+            s2=CP.PropsSI('S','P',p2,'H',h2,self.fluid)
+
+            # State 4:
+            p4=p1 # (4 -> 1: heat exchange with constant pressure)
+            h4=h3 # (3 -> 4: expansion with constant enthalpy)
+            T4=CP.PropsSI('T','P',p4,'H',h4,self.fluid)
+            s4=CP.PropsSI('S','P',p4,'H',h4,self.fluid)
+
+            m1_nom = dot_Q_hp_nom / (h2-h3)
+            P_el_setpoint = m1_nom * (h2-h1)
+            P_el = max(self.P_el_min, min(P_el_setpoint, self.P_el_max))
+            m1 = P_el_setpoint / (h2-h1)
+            dot_Q_hp = m1 * (h2-h3)
+            cop = dot_Q_hp / P_el
+
+            next_exec_time = pd.Timedelta(60, 'sec') + time
+
+        else:
+            dot_Q_hp = 0
+            P_el = 0
+            next_exec_time = pd.Timedelta(1, 'day') + time
+            
+        return {'next_exec_time': next_exec_time, 'P_el':P_el, 'dot_Q_hp':dot_Q_hp}
+    
