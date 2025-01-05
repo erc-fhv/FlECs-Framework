@@ -23,8 +23,8 @@ def test_gridoperator_initialization():
 
 def test_gridoperator_register_smartmeter():
     gridoperator = GridOperator('name')
-    smartmeter = SmartMeterMock()
-    smartmeter1 = SmartMeterMock()
+    smartmeter = SmartMeterMock('sm1')
+    smartmeter1 = SmartMeterMock('sm2')
     gridoperator.register_smartmeter(smartmeter)
     gridoperator.register_smartmeter(smartmeter1)
 
