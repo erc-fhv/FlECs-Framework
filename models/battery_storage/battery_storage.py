@@ -1,6 +1,7 @@
 
 class BatteryStorage:
     def __init__(self, 
+                 name, 
                  delta_t             =         3600, # s
                  E_0                 =  2500 * 3600, # J
                  E_max               = 50000 * 3600, # J
@@ -16,6 +17,7 @@ class BatteryStorage:
 
         Parameters
         ----------
+        name : str, name of the model
         delta_t : int, timestep in s, default 60s, 
         E_max : float, Maximum capacity in J
         E_min : float, Minimum capacity in J
@@ -24,10 +26,20 @@ class BatteryStorage:
         P_max_charge : float, maximum charging Power in W
         P_max_discharge : float, maximum discharging Power in W
         self_discharge_rate : float selfdischarge rate in 1/s
+        
+        Inputs
+        ----------
+        P_set : Setpoint Power in W
+        
+        Outputs
+        ----------
+        P_grid : Actual Grid Power in W
+        E : Energy content in storage in J
         '''
 
         self.inputs  = ['P_set']
         self.outputs = ['P_grid', 'E']
+        self.name    = name
 
         # Parameters
         self.delta_t             = delta_t

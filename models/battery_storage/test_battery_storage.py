@@ -2,7 +2,8 @@ from models.battery_storage.battery_storage import BatteryStorage
 import numpy as np
 
 def test_initialization():
-    batterystorage = BatteryStorage()
+    batterystorage = BatteryStorage(name='battery_storage_model1')
+    assert batterystorage.name                == 'battery_storage_model1'
     assert batterystorage.delta_t             ==         3600 # s
     assert batterystorage.E                   ==  2500 * 3600 # J
     assert batterystorage.E_max               == 50000 * 3600 # J
@@ -15,6 +16,7 @@ def test_initialization():
 
 def test_step_normal_charge():
     batterystorage = BatteryStorage(
+                 name                = 'battery_storage_1',
                  delta_t             =          3600, # s
                  E_0                 =      2 * 3600, # J
                  E_max               =      5 * 3600, # J
@@ -31,6 +33,7 @@ def test_step_normal_charge():
 
 def test_step_normal_discharge():
     batterystorage = BatteryStorage(
+                 name                = 'battery_storage_1',
                  delta_t             =          3600, # s
                  E_0                 =      3 * 3600, # J
                  E_max               =      5 * 3600, # J
@@ -47,6 +50,7 @@ def test_step_normal_discharge():
 
 def test_step_over_charge():
     batterystorage = BatteryStorage(
+                 name                = 'battery_storage_1',
                  delta_t             =          3600, # s
                  E_0                 =      4 * 3600, # J
                  E_max               =      5 * 3600, # J
@@ -63,6 +67,7 @@ def test_step_over_charge():
 
 def test_step_over_discharge():
     batterystorage = BatteryStorage(
+                 name                = 'battery_storage_1',
                  delta_t             =          3600, # s
                  E_0                 =      1 * 3600, # J
                  E_max               =      5 * 3600, # J
@@ -79,6 +84,7 @@ def test_step_over_discharge():
 
 def test_step_charging_effiency():
     batterystorage = BatteryStorage(
+                 name                = 'battery_storage_1',
                  delta_t             =          3600, # s
                  E_0                 =      1 * 3600, # J
                  E_max               =      5 * 3600, # J
@@ -95,6 +101,7 @@ def test_step_charging_effiency():
 
 def test_step_discharging_effiency():
     batterystorage = BatteryStorage(
+                 name                = 'battery_storage_1',
                  delta_t             =          3600, # s
                  E_0                 =      3 * 3600, # J
                  E_max               =      5 * 3600, # J
