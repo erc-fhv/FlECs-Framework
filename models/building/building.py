@@ -21,7 +21,7 @@ class BuildingModel():
 
         self._x = np.array([T_building_0])
         
-        self.dot_Q_int_inputs = [f'dot_Q_int_{i}' for i in range(count_of_dot_Q_int)]
+        self.dot_Q_int_inputs = [f'dot_Q_int_{i}' for i in range(count_of_dot_Q_int)] # TODO: can be changed to new multiinput feature of simplec
         
         self.inputs = ['dot_Q_heat', 'dot_Q_cool', 'T_amb', 'I_dir', 'I_dif', 'I_s', 'I_w', 'I_n', 'I_e'] + self.dot_Q_int_inputs
         self.outputs = ['T_building']

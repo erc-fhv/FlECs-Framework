@@ -5,7 +5,6 @@ import pickle
 from unittest.mock import MagicMock, patch
 from models.building.building import BuildingModel
 
-
 @pytest.fixture
 def mocked_building_model():
     """
@@ -13,7 +12,7 @@ def mocked_building_model():
     """
     # Mock the facade model's predict method
     mocked_fasade_model = MagicMock()
-    mocked_fasade_model.predict.return_value = np.array([[0.5]])
+    mocked_fasade_model.predict.return_value = np.array([0.5])
 
     # Patch the pickle.load call to return the mocked facade model
     with patch("pickle.load", return_value=mocked_fasade_model):
@@ -23,7 +22,10 @@ def mocked_building_model():
 def test_fasade_model():
     with open('models/building/fasade_model.pkl', mode='rb') as f:
         model = pickle.load(f)
-    model.predict([[200, 100, 50, 60, 70, 80]])
+    output = model.predict([[200, 100, 50, 60, 70, 80]])
+    assert isinstance(output, np.ndarray)
+    assert output.shape == (1,)
+    assert np.isclose(output[0], 1044.11618135) 
 
 def test_initialization(mocked_building_model):
     """
@@ -42,7 +44,7 @@ def test_step_method_with_valid_inputs(mocked_building_model):
     model = mocked_building_model
     result = model.step(
         time=0,
-        dot_Q_htg=500,
+        dot_Q_heat=500,
         dot_Q_cool=300,
         dot_Q_int=100,
         T_amb=25,
@@ -63,7 +65,7 @@ def test_facade_model_integration(mocked_building_model):
     model = mocked_building_model
     model.step(
         time=0,
-        dot_Q_htg=500,
+        dot_Q_heat=500,
         dot_Q_cool=300,
         dot_Q_int=100,
         T_amb=25,
@@ -90,7 +92,7 @@ def test_matrix_computation(mocked_building_model):
 
     result = model.step(
         time=0,
-        dot_Q_htg=100,
+        dot_Q_heat=100,
         dot_Q_cool=50,
         dot_Q_int=20,
         T_amb=25,
