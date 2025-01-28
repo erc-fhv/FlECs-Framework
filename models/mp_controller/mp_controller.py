@@ -3,7 +3,7 @@ from .forcasting import ForcastingProto
 from .opt_models.MILP_model_proto import MILPModelProto
 
 class MPController():
-    def __init__(self, name, n_periods, delta_t, pyo_solver_name='appsi_highs'):
+    def __init__(self, name, n_periods, delta_t, pyo_solver_name='appsi_highs', return_forcast=False):
         '''A model predicteve Controller utilizing MILP with pyomo. 
         MILP Models can be added to the model via the add_model() method. Added modles need to follow a given structure. 
         Please find examples for reference.
@@ -20,6 +20,8 @@ class MPController():
         self.delta_t    = delta_t
         self.inputs = []
         self.outputs = []
+
+        self.return_forcast = return_forcast
 
         self.solver = pyo.SolverFactory(pyo_solver_name)
 
@@ -89,6 +91,9 @@ class MPController():
         self.forcasters += [(complete_for_vars, forcaster)]
         forcaster.set_forcast_length(self.n_periods)
 
+        if self.return_forcast:
+            self.outputs += complete_for_vars
+
     def step(self, time, **inputs):
         # TODO: create observers to manipulate the input variables
 
@@ -125,6 +130,10 @@ class MPController():
         for comp in self.components:
             pyo_comp = self.model.find_component(comp.name)
             for out_name in comp.controll_outputs:
-                outputs[out_name+'_of_'+comp.name] =pyo.value(pyo_comp.__getattribute__(out_name)[0])
+                outputs[out_name+'_of_'+comp.name] = pyo.value(pyo_comp.__getattribute__(out_name)[0])
+
+        if self.return_forcast:
+            outputs.update(forcast_outputs)
+
         return outputs
     

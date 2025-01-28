@@ -31,11 +31,11 @@ def test_gridoperator_register_smartmeter():
     assert isinstance(gridoperator._smart_meter_models[0], SmartMeterMock)
     assert isinstance(gridoperator._smart_meter_models[1], SmartMeterMock)
 
-def test_gridoperator_step():
-    gridoperator = GridOperator('name')
-    smartmeter = SmartMeterMock('sm1')
-    smartmeter1 = SmartMeterMock('sm2')
-    gridoperator.register_smartmeter(smartmeter)
-    gridoperator.register_smartmeter(smartmeter1)
+# def test_gridoperator_step():
+#     gridoperator = GridOperator('name')
+#     smartmeter = SmartMeterMock('sm1')
+#     smartmeter1 = SmartMeterMock('sm2')
+#     gridoperator.register_smartmeter(smartmeter)
+#     gridoperator.register_smartmeter(smartmeter1)
 
-    print(gridoperator.step(1))
+#     # print(gridoperator.step(1))

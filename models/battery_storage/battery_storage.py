@@ -56,30 +56,30 @@ class BatteryStorage:
 
     def step(self, time, P_set):
         '''
-        P_set : Setpoint Power: P_set>0... discharging, P_set<0... charging
+        P_set : Setpoint Power: P_set>0... charging, P_set<0... discharging
         '''
-
-        P_set_valid = min(self.P_max_discharge, max(P_set, -self.P_max_charge))  # maximum / minimum power constraint
+        P_set_valid = min(self.P_max_charge, max(P_set, -self.P_max_discharge))  # maximum / minimum power constraint
 
         # calculate potential new capacity
-        if P_set_valid < 0: 
-            E_new = self.E - P_set_valid * self.delta_t * self.eta_charge
+        if P_set_valid > 0: 
+            E_new = self.E + P_set_valid * self.delta_t * self.eta_charge
         else:
-            E_new = self.E - P_set_valid * self.delta_t / self.eta_discharge
+            E_new = self.E + P_set_valid * self.delta_t / self.eta_discharge
 
         # check limits and adjust
         if E_new < self.E_min: # storage empty
-            P_grid = (self.E - self.E_min) / self.delta_t * self.eta_discharge
+            P_grid = (self.E_min - self.E) / self.delta_t * self.eta_discharge
             self.E = self.E_min
         elif E_new > self.E_max: # storage full
-            P_grid = (self.E - self.E_max) / self.delta_t / self.eta_charge
+            P_grid = (self.E_max - self.E) / self.delta_t / self.eta_charge
             self.E = self.E_max
         else:
             P_grid = P_set_valid
             self.E = E_new
 
         # apply self discharge
-        self.E = self.E*(1-self.self_discharge_rate*self.delta_t)
+        self.E = (self.E-self.E_min)*(1-self.self_discharge_rate*self.delta_t) + self.E_min
 
         return {'P_grid': P_grid, 'E': self.E}
+
 

@@ -77,7 +77,7 @@ class GenericPersistenceForcasting():
 
     def set_data(self, P_tot, P_flex_) -> None:
         P_flex = sum(P_flex_)
-        P_resid = P_tot - P_flex
+        P_resid = P_tot - P_flex   # signs!!!?????????????????????????
         self.ser = self.ser.shift(-1)
         self.ser.loc[self.last_index] = P_resid
     
