@@ -19,7 +19,7 @@ class HeatPumpEventBased():
         self.name = name
 
     def step(self, time, state, T_source, T_sink):
-        if state == 'on':
+        if state == 1:
             P_el = self.P_el_nom
             next_exec_time = pd.Timedelta(60, 'sec') + time
         else:
@@ -51,7 +51,7 @@ class HeatPumpWControlEventBased():
         self.name = name
 
     def step(self, time, state, T_source, T_sink):
-        if state == 'on':
+        if state == 1:
             dot_Q_hp_nom = self.dot_Q_hp_nom
             cop = self._cop_fun(T_source, T_sink, self.eta) # calc COP
             P_el_setpoint = dot_Q_hp_nom / cop # Calculate nominal P_el at current COP
@@ -67,28 +67,50 @@ class HeatPumpWControlEventBased():
         return {'next_exec_time': next_exec_time, 'P_el':P_el, 'dot_Q_hp':dot_Q_hp}
         
 
-class HeatPumpCoolingcircle():
-    def __init__(self, name, delta_t=60, eta=0.7414, P_el_nom=2000, fluid='R290') -> None:
-        # Parameter
-        self.delta_t = delta_t
+class HeatPumpCoolingcircleEventBased():
+    ''''
+        Heat pump model with with cooling circle
+        Parameter
+        ---------
+        name : str, name of the model
+        delta_t : int, timestep in s, default 60s
+        eta : float, isentropic efficiency (no unit)
+        P_el_nom : float, nominal electrical power in W
+        fluid : str, cooling fluid used in cooling circle
 
-        self.eta      = eta
-        self.P_el_nom = P_el_nom # nominal Power
-        self.fluid    = fluid 
+        Inputs
+        ---------
+        T_source : float, source/outside temperature in °C
+        T_sink : float, room temperature in °C
+        state : binary, variable controlling the heat pump (no unit)
+
+        Outputs
+        ---------
+        P_el : float, calculated electrical power in W
+        dot_Q_hp : float, calculated heating power in W
+        '''
+
+    def __init__(self, name, delta_t=60, eta=0.8433, P_el_nom=3500, fluid='R290') -> None:
+        # Parameter
+        self.delta_t = delta_t # s
+
+        self.eta      = eta # isentropic efficiency
+        self.P_el_nom = P_el_nom # nominal power in W
+        self.fluid    = fluid # fluid used in cooling circle
 
         # inputs outputs 
         self.inputs  = ['state', 'T_source', 'T_sink']
-        self.outputs = ['cop', 'P_el', 'dot_Q_hp']
+        self.outputs = ['P_el', 'dot_Q_hp']
         self.name = name
 
     def step(self, time, state, T_source, T_sink):
-        if state == 'on':
+        if state == 1:
 
             P_el = self.P_el_nom
-            x1=1
-            T1=T_source # °C
-            x3=0
-            T3=T_sink   # °C
+            x1=1 # fraction of vapor
+            T1=T_source - 3 # °C
+            x3=0 # fraction of vapor
+            T3=T_sink + 3   # °C
 
             # State 1:
             h1=CP.PropsSI('H','T',T1+273.15,'Q',x1,self.fluid)
@@ -126,33 +148,57 @@ class HeatPumpCoolingcircle():
             dot_Q_hp = P_el * cop
             next_exec_time = pd.Timedelta(1, 'day') + time
             
-        return {'next_exec_time': next_exec_time, 'cop':cop, 'P_el':P_el, 'dot_Q_hp':dot_Q_hp}
+        return {'next_exec_time': next_exec_time, 'P_el':P_el, 'dot_Q_hp':dot_Q_hp}
     
 
 class HeatPumpCoolingcircleWControl():
-    def __init__(self, name, delta_t=60, eta=0.7414, dot_Q_hp_nom=15000, P_el_max=5700, P_el_min=1000, fluid='R290') -> None:
-        # Parameter
-        self.delta_t = delta_t
+    def __init__(self, name, delta_t=60, eta=0.8433, dot_Q_hp_nom=15000, P_el_max=5700, P_el_min=1000, fluid='R290') -> None:
+        ''''
+        Heat pump model with with cooling circle and control
+        Parameter
+        ---------
+        name : str, name of the model
+        delta_t : int, timestep in s, default 60s
+        eta : float, isentropic efficiency (no unit)
+        dot_Q_hp_nom : float, nominal heating power in W
+        P_el_max : float, maximum electrical power in W
+        P_el_min : float, minimum electrical power in W
+        fluid : str, cooling fluid used in cooling circle
 
-        self.eta      = eta
-        self.dot_Q_hp_nom = dot_Q_hp_nom # nominal hating power
-        self.P_el_max = P_el_max
-        self.P_el_min = P_el_min
-        self.fluid    = fluid 
+        Inputs
+        ---------
+        T_source : float, source/outside temperature in °C
+        T_sink : float, room temperature in °C
+        state : binary, variable controlling the heat pump (no unit)
+
+        Outputs
+        ---------
+        P_el : float, calculated electrical power in W
+        dot_Q_hp : float, calculated heating power in W
+        '''
+
+        # Parameter
+        self.delta_t      = delta_t # s
+
+        self.eta          = eta # isentropic efficiency
+        self.dot_Q_hp_nom = dot_Q_hp_nom # nominal hating power in W
+        self.P_el_max     = P_el_max # maximum electrical power in W
+        self.P_el_min     = P_el_min # minimum electrical power in W
+        self.fluid        = fluid # cooling fluid
 
         # inputs outputs 
         self.inputs  = ['state', 'T_source', 'T_sink']
-        self.outputs = ['cop', 'P_el', 'dot_Q_hp']
+        self.outputs = ['P_el', 'dot_Q_hp']
         self.name = name
 
     def step(self, time, state, T_source, T_sink):
-        if state == 'on':
+        if state == 1:
 
             dot_Q_hp_nom = self.dot_Q_hp_nom
-            x1=1
-            T1=T_source # °C
-            x3=0
-            T3=T_sink   # °C
+            x1=1 # fraction of vapor
+            T1=T_source -3 # °C
+            x3=0 # fraction of vapor
+            T3=T_sink +3   # °C
 
             # State 1:
             h1=CP.PropsSI('H','T',T1+273.15,'Q',x1,self.fluid)
@@ -180,9 +226,9 @@ class HeatPumpCoolingcircleWControl():
             m1_nom = dot_Q_hp_nom / (h2-h3)
             P_el_setpoint = m1_nom * (h2-h1)
             P_el = max(self.P_el_min, min(P_el_setpoint, self.P_el_max))
-            m1 = P_el_setpoint / (h2-h1)
+            m1 = P_el / (h2-h1)
             dot_Q_hp = m1 * (h2-h3)
-            cop = dot_Q_hp / P_el
+            # cop = dot_Q_hp / P_el
 
             next_exec_time = pd.Timedelta(60, 'sec') + time
 
