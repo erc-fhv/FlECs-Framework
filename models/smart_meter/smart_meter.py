@@ -1,4 +1,5 @@
 import pandas as pd
+from collections import deque
 
 class SmartMeter():
     def __init__(self, name):
@@ -8,11 +9,11 @@ class SmartMeter():
         self.inputs = ['P_'] # P_ as list attribute (endswith '_')
         self.outputs = ['P_grid']
 
-        self._P_quarter_hourly_data = pd.Series([], name=self.name, dtype=float)
+        self._P_quarter_hourly_data = pd.Series([], name=self.name)
 
     def step(self, time, P_):
         P_grid = sum(P_)
-        # self._P_quarter_hourly_data.at[time] = P_grid
+        # self._P_quarter_hourly_data[time] = P_grid
 
         return {'P_grid': P_grid}
 
