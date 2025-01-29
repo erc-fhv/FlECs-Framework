@@ -8,11 +8,11 @@ class SmartMeter():
         self.inputs = ['P_'] # P_ as list attribute (endswith '_')
         self.outputs = ['P_grid']
 
-        self._P_quarter_hourly_data = pd.Series([], name=self.name)
+        self._P_quarter_hourly_data = pd.Series([], name=self.name, dtype=float)
 
     def step(self, time, P_):
         P_grid = sum(P_)
-        self._P_quarter_hourly_data[time] = P_grid
+        # self._P_quarter_hourly_data.at[time] = P_grid
 
         return {'P_grid': P_grid}
 
