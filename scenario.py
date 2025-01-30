@@ -183,6 +183,7 @@ sim.connect(grid, mp_contr, ('P_substation', 'P_tot'))
 sim.connect(mp_contr, battery_storage, ('P_el_of_bes', 'P_set'), time_shifted=True, init_values={'P_el_of_bes': 0})
 
 
+# times = pd.date_range('2021-01-01 00:00:00', '2021-01-01 23:59:00', freq='1min', tz='Europe/Berlin')
 times = pd.date_range('2021-01-01 00:00:00', '2021-12-31 23:59:00', freq='1min', tz='Europe/Berlin')
 
 sim.run(times)
