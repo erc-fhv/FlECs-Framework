@@ -96,8 +96,8 @@ class PersistenceResidualSmartmeterLoadForcasting():
         self.delay_periods = delay_periods # delay between call and start of prediction horizon (usually one, as optimization start there)
 
         self.data = pd.DataFrame([], columns=['P_tot','P_flex', 'P_resid'])
-        self.last_valid_index = pd.to_datetime('1990-01-01 00:00')
-        self.last_valid_index = pd.to_datetime('1990-01-01 00:00')
+        self.last_valid_index = pd.to_datetime('1990-01-01 00:00').tz_localize(tz='Europe/Berlin')
+        self.last_valid_index = pd.to_datetime('1990-01-01 00:00').tz_localize(tz='Europe/Berlin')
 
     def get_forcast(self, time) -> list:
         # get last day if exists in data
@@ -122,20 +122,24 @@ class PersistenceResidualSmartmeterLoadForcasting():
     def set_delta_t(self, delta_t:int) -> None:
         self.delta_t = delta_t
         self.timedelta_delay = pd.to_timedelta(self.delay_periods*delta_t, unit='s')
+        if hasattr(self, 'periods'):
+            self.timedelta_periods = pd.Timedelta((self.periods-1)*self.delta_t, unit='s')
 
     def set_forcast_length(self, n:int) -> None:  # TODO: add delta t to the atributes that are added by the controller!
         self.periods = n
-        self.timedelta_periods = pd.Timedelta((n-1)*self.delta_t, unit='s')
+        if hasattr(self, 'delta_t'):
+            self.timedelta_periods = pd.Timedelta((n-1)*self.delta_t, unit='s')
 
     def set_smart_meter_data(self, df_P_daily):
-        P_tot = df_P_daily.sum(axis=1).squeeze()
-        self.data = self.data.reindex(self.data.index.union(P_tot.index)) # TODO: make nicer!
-        self.data.loc[P_tot.index, 'P_tot'] = P_tot.values
-        self.data['P_resid'] = self.data['P_tot'] - self.data['P_flex'] # signs!!!?????????????????????????
-        self.last_valid_index = df_P_daily.index[-1]
-        
-        # get first valid index  # TODO: improve!
-        df_usefull = self.data.dropna()
-        if not df_usefull.empty:
-            self.first_valid_index = df_usefull.index[0] 
+        if not df_P_daily.empty:
+            P_tot = df_P_daily.sum(axis=1).squeeze()
+            self.data = self.data.reindex(self.data.index.union(P_tot.index)) # TODO: make nicer!
+            self.data.loc[P_tot.index, 'P_tot'] = P_tot.values
+            self.data['P_resid'] = self.data['P_tot'] - self.data['P_flex'] # signs!!!?????????????????????????
+            self.last_valid_index = df_P_daily.index[-1]
+            
+            # get first valid index  # TODO: improve!
+            df_usefull = self.data.dropna()
+            if not df_usefull.empty:
+                self.first_valid_index = df_usefull.index[0] 
 

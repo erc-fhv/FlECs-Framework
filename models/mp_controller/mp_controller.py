@@ -92,7 +92,7 @@ class MPController():
         self.forcasters += [(complete_for_vars, forcaster)]
 
         forcaster.set_forcast_length(self.n_periods)
-        if hasattr(forcaster, 'set_detla_t'):
+        if hasattr(forcaster, 'set_delta_t'):
             forcaster.set_delta_t(self.delta_t)
 
         if self.return_forcast:

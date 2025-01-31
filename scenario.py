@@ -177,10 +177,9 @@ milp_bes = BES_MILP_model(
     )
 mp_contr.add_model(milp_bes)
 
-sim.add_model(mp_contr, watch_values=['P_tot', 'E_BES_0_of_bes', 'P_el_of_bes']) # , watch_heavy=['P_resid_ec_of_EC'])
+sim.add_model(mp_contr, watch_values=['E_BES_0_of_bes', 'P_el_of_bes']) # , watch_heavy=['P_resid_ec_of_EC'])
 
 sim.connect(battery_storage, mp_contr, ('E', 'E_BES_0_of_bes'), ('P_grid', 'P_flex_'))
-sim.connect(grid, mp_contr, ('P_substation', 'P_tot'))
 
 sim.connect(mp_contr, battery_storage, ('P_el_of_bes', 'P_set'), time_shifted=True, init_values={'P_el_of_bes': 0})
 

@@ -23,15 +23,19 @@ class SmartMeter():
         if not self.reccords:
             return pd.Series([], name=self.name)
         
-        ser = pd.DataFrame.from_records(
+        df = pd.DataFrame.from_records(
             self.reccords, 
             columns=['index', self.name], 
             index='index'
-            ).squeeze()
+            )
         self.reccords = []
-
+   
+        if df.shape[0] < 15:
+            return pd.Series([], name=self.name)
+        
+        ser = df.squeeze()
         # resampled_data = (ser*self.delta_t).resample('15min').sum()
-        resampled_data = (ser).resample('15min').mean()
+        resampled_data = ser.resample('15min').mean()
         
         return resampled_data
         
