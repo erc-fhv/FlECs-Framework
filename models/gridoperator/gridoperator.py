@@ -1,12 +1,17 @@
 import pandas as pd
 
 class GridOperator():
-    def __init__(self, name, delta_t=60*60*24, smart_meter_models=[]):
+    def __init__(self, name, delta_t=60*60*24):
+        '''Grid operator. 
+        The model mimics the daily retrieval of the data from the smart meters 
+        and provides the data to the registerd parties/(i.e. energy communities) 
+        behaviour is similar to the sustrian EDA platform.
+        '''
         self.name = name
         self.delta_t = delta_t
         self.inputs = []
         self.outputs = ['df_P_day']
-        self._smart_meter_models = smart_meter_models
+        self._smart_meter_models = []
         self.callbacks = []
 
     def register_smartmeter(self, smart_meter_model):

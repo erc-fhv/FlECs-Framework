@@ -11,8 +11,6 @@ def test_smartmeter_initialization():
     assert smartmeter.inputs == ['P_']
     assert smartmeter.outputs == ['P_grid']
     assert smartmeter.delta_t == 60
-    assert isinstance(smartmeter._P_quarter_hourly_data, pd.Series)
-    assert smartmeter._P_quarter_hourly_data.name == 'name'
 
 def test_smartmeter_step():
     smartmeter = SmartMeter('name')
@@ -34,13 +32,12 @@ def test_smart_meter_retrieve_data():
 
     # calculate manually resampled results
     df = smartmeter.retrieve_data()
-    expected_value1 = (P_values*60).sum(axis=1)[:15].sum()
-    expected_value2 = (P_values*60).sum(axis=1)[15:30].sum()
+    expected_value1 = (P_values).sum(axis=1)[:15].mean()
+    expected_value2 = (P_values).sum(axis=1)[15:30].mean()
     assert np.isclose(df['2022-01-01 00:00:00'], expected_value1, atol=1e-3), 'aggregation seems to fail'
     assert np.isclose(df['2022-01-01 00:15:00'], expected_value2, atol=1e-3), 'aggregation seems to fail'
 
-    assert smartmeter._P_quarter_hourly_data.empty, 'after retrieve data, df should be empty'
-    assert smartmeter._P_quarter_hourly_data.name == 'name', 'name should still be the same'
+    assert not smartmeter.reccords, 'after retrieve data, reccords list should be empty'
 
     # repeat test after emptying dataframe
     P_values = np.random.random((30, 2))*2000 # new random P values
@@ -51,11 +48,8 @@ def test_smart_meter_retrieve_data():
 
     # calculate manually resampled results
     df = smartmeter.retrieve_data()
-    expected_value1 = (P_values*60).sum(axis=1)[:15].sum()
-    expected_value2 = (P_values*60).sum(axis=1)[15:30].sum()
+    expected_value1 = (P_values).sum(axis=1)[:15].mean()
+    expected_value2 = (P_values).sum(axis=1)[15:30].mean()
     assert np.isclose(df.loc['2022-01-01 00:30:00'], expected_value1, atol=1e-3), 'aggregation seems to fail'
     assert np.isclose(df.loc['2022-01-01 00:45:00'], expected_value2, atol=1e-3), 'aggregation seems to fail'
     
-
-
-

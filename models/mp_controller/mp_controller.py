@@ -14,6 +14,7 @@ class MPController():
         n_periods : int, length of optimization horizon
         delta_t : int, timedelta of the controller in s
         pyo_solver_name : str, name of a pyomo solver (passed to pyo.SolverFactory)
+        return_forcast : bool, return the forcast values as outputs of the controller model
         '''
         self.name       = name
         self.n_periods  = n_periods
@@ -89,7 +90,10 @@ class MPController():
 
         complete_for_vars =[for_var+'_of_'+for_model.name]
         self.forcasters += [(complete_for_vars, forcaster)]
+
         forcaster.set_forcast_length(self.n_periods)
+        if hasattr(forcaster, 'set_detla_t'):
+            forcaster.set_delta_t(self.delta_t)
 
         if self.return_forcast:
             self.outputs += complete_for_vars
@@ -106,12 +110,12 @@ class MPController():
         for _, forc in self.forcasters:
             # get inputs for forcasters
             forc_inputs = {k: inputs[k] for k in forc.inputs}
-            forc.set_data(**forc_inputs)
+            forc.set_data(time, **forc_inputs)
 
         # create forcasts
         forcast_outputs = {}
         for for_vars, forc in self.forcasters:
-            forc_out = forc.get_forcast()
+            forc_out = forc.get_forcast(time)
             outputs_maped = {k: forc_out for k in for_vars}
             forcast_outputs.update(outputs_maped)
 

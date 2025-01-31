@@ -5,7 +5,7 @@ from models.mp_controller.forcasting import Forcasting
 import pyomo.environ as pyo
 
 def test_MPController_init():
-    mpc = MPController(3, 60*15)
+    mpc = MPController('mpc', 3, 60*15)
 
     assert isinstance(mpc.model, pyo.ConcreteModel)
     assert isinstance(mpc.model.periods, pyo.RangeSet)
@@ -17,10 +17,11 @@ def test_MPController_add_model():
         name = 'comp'
         state_inputs = ['a']
         shares = ['P_el']
+        controll_outputs = []
         def pyo_block_rule(self, block):
             block.P_el = pyo.Var(block.model().periods)
     
-    mpc = MPController(3, 60*15)
+    mpc = MPController('mpc', 3, 60*15)
     cm = ComponentMock()
     mpc.add_model(cm)
 
@@ -30,7 +31,7 @@ def test_MPController_add_model():
     assert 'a_of_comp' in mpc.inputs
 
 def test_simple_scenario():
-    ctr = MPController(n_periods=3,
+    ctr = MPController('mpc', n_periods=3,
                        delta_t=1)
     # EC
     ec = EC__Residual_Load_MILP_model()
@@ -40,10 +41,10 @@ def test_simple_scenario():
         def __init__(self, inputs):
             self.inputs = inputs
 
-        def get_forcast(self) -> list:
+        def get_forcast(self, time) -> list:
             return [1, 0, 0]
 
-        def set_data(self):
+        def set_data(self, time):
             pass
         
         def set_forcast_length(self, n):
@@ -68,7 +69,7 @@ def test_simple_scenario():
     assert outputs['P_el_of_BES'] == -1.
 
 def test_forcaster_integration():
-    ctr = MPController(n_periods=3,
+    ctr = MPController('mpc', n_periods=3,
                        delta_t=1)
     # EC
     ec = EC__Residual_Load_MILP_model()
@@ -79,10 +80,10 @@ def test_forcaster_integration():
             self.inputs = ['data']
             self.data = []
 
-        def get_forcast(self) -> list:
+        def get_forcast(self, time) -> list:
             return self.data
 
-        def set_data(self, data):
+        def set_data(self, time, data):
             assert len(data) == self.n_periods
             self.data = data
         
@@ -108,7 +109,7 @@ def test_forcaster_integration():
 
 
 def test_complete_scenario():
-    ctr = MPController(n_periods=3,
+    ctr = MPController('mpc', n_periods=3,
                        delta_t=1)
     # EC
     ec = EC__Residual_Load_MILP_model()

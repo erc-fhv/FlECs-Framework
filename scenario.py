@@ -157,9 +157,11 @@ milp_ec  = EC__Residual_Load_MILP_model()
 mp_contr.add_model(milp_ec)
 
 ## Forcast for EC
-ec_forcast = Forcasting('persistence_residual_load', init_val=0)
-mp_contr.add_forcaster(ec_forcast, milp_ec, 'P_resid_ec')
+ec_forcast = Forcasting('persistence_residual_load_smartmeter', default_val=0)
+# register ec forcast at gridoperator, to retrive the data when it is updated (once a day)
+gridoperator.register_callback_new_data(ec_forcast.set_smart_meter_data)
 
+mp_contr.add_forcaster(ec_forcast, milp_ec, 'P_resid_ec')
 
 ##############
 # BES
@@ -184,6 +186,7 @@ sim.connect(mp_contr, battery_storage, ('P_el_of_bes', 'P_set'), time_shifted=Tr
 
 
 # times = pd.date_range('2021-01-01 00:00:00', '2021-01-01 23:59:00', freq='1min', tz='Europe/Berlin')
-times = pd.date_range('2021-01-01 00:00:00', '2021-12-31 23:59:00', freq='1min', tz='Europe/Berlin')
+# times = pd.date_range('2021-01-01 00:00:00', '2021-12-31 23:59:00', freq='1min', tz='Europe/Berlin')
+times = pd.date_range('2021-01-01 00:00:00', '2021-02-01 00:00:00', freq='1min', tz='Europe/Berlin')
 
 sim.run(times)
