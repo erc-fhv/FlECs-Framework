@@ -127,7 +127,8 @@ class MPController():
                 for p in self.model.periods:
                     comp.__getattribute__(forc_name).__setitem__(p, forcast_outputs[name][p])
 
-        self.solver.solve(self.model)
+        #self.model.pprint()
+        solver_outpt = self.solver.solve(self.model)#, tee=True)
 
         # get outputs from models
         outputs = {}

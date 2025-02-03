@@ -1,5 +1,5 @@
 import numpy as np
-from TES_logic import logic_heat_transfer
+from models.TES.TES_logic import logic_heat_transfer
 
 class TESModel():
     def __init__(self, name, delta_t=60, V=0.1, d=400, N=10, U=0.766, k_1=8.2, P_el_nom=2000, h_he=300, T0=[40., 40., 40., 40., 40., 40., 40., 40., 40., 40.]) -> None:
@@ -30,10 +30,11 @@ class TESModel():
         Outputs
         ---------
         T_tw : float, temperature in layer of thermal well in °C (same layer as heating element ends)
+        T_0 : float, temperature in top layer in °C
         '''
 
-        self.inputs  = ['dot_m_i_DHW', 'dot_m_o_DHW', 'T_i_DHW', 'state', 'T_inf']
-        self.outputs = ['T_tw']
+        self.inputs  = ['dot_m_o_DHW', 'T_i_DHW', 'state', 'T_inf']
+        self.outputs = ['T_tw', 'T_0']
         self.name    = name
 
         # Parameters
@@ -51,9 +52,9 @@ class TESModel():
         self.C         = [self.m_l*self.c_p] * N # J / kg
         self.A         = np.zeros((self.N, self.N)) # A matrix
         self.B         = np.zeros((self.N, self.N+2)) # B matrix
-        self.u         = np.zeros((1, self.N+2)) # u vector
+        self.u         = np.zeros(self.N+2) # u vector
         self.dot_m     = np.zeros((self.N, self.N)) # dot_m[ein, aus]
-        self.x         = np.array([T0]) + 273.15 # vector containing starting temperatures in K
+        self.x         = np.array(T0) + 273.15 # vector containing starting temperatures in K
         self.k         = [  0] *self.N # starting k values (values will be determined in logic) W/(m K)
         self.k_1       = k_1 # W/(m K)
         self.k_2       = 999999 # W/(m K)
@@ -61,10 +62,10 @@ class TESModel():
         self.P_el      = [0] * (self.N-self.he_layers) + [self.P_el_nom/self.he_layers] * self.he_layers # list of electrical power input of each layer in W
         
 
-    def step(self, time, dot_m_i_DHW, dot_m_o_DHW, T_i_DHW, T_inf, state):
-        dot_m_i = [          0] + [0]*(self.N-2) + [dot_m_i_DHW] # kg/s
-        T_i     = [          0] + [0]*(self.N-2) + [    T_i_DHW] # K
-        dot_m_o = [dot_m_o_DHW] + [0]*(self.N-2) + [          0] # kg/s
+    def step(self, time, dot_m_o_DHW, T_i_DHW, T_inf, state):
+        dot_m_i = [             0] + [0]*(self.N-2) + [   dot_m_o_DHW] # kg/s
+        T_i     = [             0] + [0]*(self.N-2) + [T_i_DHW+273.15] # K
+        dot_m_o = [   dot_m_o_DHW] + [0]*(self.N-2) + [             0] # kg/s
 
-        self.x = logic_heat_transfer(dot_m_i, dot_m_o, self.dot_m, self.UA, self.A, self.B, self.u, self.C, self.N, self.c_p, self.x, T_inf, T_i, self.delta_t, self.x_l, self.k, self.A_l, self.k_1, self.k_2, self.P_el, state)
-        return {'T_tw':self.x[6]-273.15}
+        self.x = logic_heat_transfer(dot_m_i, dot_m_o, self.dot_m, self.UA, self.A, self.B, self.u, self.C, self.N, self.c_p, self.x, T_inf+273.15, T_i, self.delta_t, self.x_l, self.k, self.A_l, self.k_1, self.k_2, self.P_el, state)
+        return {'T_tw':(self.x[6]-273.15), 'T_0':(self.x[0]-273.15)}

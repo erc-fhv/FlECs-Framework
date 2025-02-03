@@ -118,6 +118,10 @@ class PersistenceResidualSmartmeterLoadForcasting():
     def set_data(self, time, P_flex_) -> None:
         P_flex = sum(P_flex_)
         self.data.at[time, 'P_flex'] = P_flex
+        df_usefull = self.data.dropna()
+        if not df_usefull.empty:
+            self.first_valid_index = df_usefull.index[0] 
+            self.last_valid_index = df_usefull.index[-1]
 
     def set_delta_t(self, delta_t:int) -> None:
         self.delta_t = delta_t
@@ -136,10 +140,11 @@ class PersistenceResidualSmartmeterLoadForcasting():
             self.data = self.data.reindex(self.data.index.union(P_tot.index)) # TODO: make nicer!
             self.data.loc[P_tot.index, 'P_tot'] = P_tot.values
             self.data['P_resid'] = self.data['P_tot'] - self.data['P_flex'] # signs!!!?????????????????????????
-            self.last_valid_index = df_P_daily.index[-1]
+            # self.last_valid_index = df_P_daily.index[-1]
             
             # get first valid index  # TODO: improve!
             df_usefull = self.data.dropna()
             if not df_usefull.empty:
                 self.first_valid_index = df_usefull.index[0] 
+                self.last_valid_index = df_usefull.index[-1]
 

@@ -39,7 +39,6 @@ def test_step_method_with_demand(mocked_TES_model):
     model = mocked_TES_model
     result = model.step(
         time=0,
-        dot_m_i_DHW=0.1,
         dot_m_o_DHW=0.1,
         T_i_DHW=283.15,
         T_inf=283.15,
@@ -55,7 +54,6 @@ def test_step_method_heating_without_demand(mocked_TES_model):
     model = mocked_TES_model
     result = model.step(
         time=0,
-        dot_m_i_DHW=0,
         dot_m_o_DHW=0,
         T_i_DHW=283.15,
         T_inf=283.15,
@@ -71,7 +69,6 @@ def test_step_method_without_demand_heating(mocked_TES_model):
     model = mocked_TES_model
     result = model.step(
         time=0,
-        dot_m_i_DHW=0,
         dot_m_o_DHW=0,
         T_i_DHW=283.15,
         T_inf=283.15,

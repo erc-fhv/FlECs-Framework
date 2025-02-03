@@ -8,11 +8,11 @@ def logic_heat_transfer(dot_m_i, dot_m_o, dot_m, UA, A, B, u, C, N, c_p, x_prev,
     #################
     # Effective thermal conductivity
     #################
-  
+  # TODO : transpose x!
     for n in range(1, N):
-        if x_prev[0][n-1] >= x_prev[0][n]:
+        if x_prev[n-1] >= x_prev[n]:
             k[n] = k_1
-        elif x_prev[0][n-1] < x_prev[0][n]:
+        elif x_prev[n-1] < x_prev[n]:
             k[n] = k_2
 
     # check mass balance
@@ -69,10 +69,10 @@ def logic_heat_transfer(dot_m_i, dot_m_o, dot_m, UA, A, B, u, C, N, c_p, x_prev,
     #################
     # u-Vector
     #################
-    u[0,0] = T_inf
-    u[0, N+1] = state
+    u[0] = T_inf
+    u[N+1] = state
     for n in range(N):
-        u[0, n+1] = dot_m_i[n]*T_i[n]
+        u[n+1] = dot_m_i[n]*T_i[n]
 
     # discretize
 
@@ -84,6 +84,6 @@ def logic_heat_transfer(dot_m_i, dot_m_o, dot_m, UA, A, B, u, C, N, c_p, x_prev,
     Ad = res[:A.shape[0], :A.shape[1]]
     Bd = res[:B.shape[0], A.shape[1]:]
 
-    x=Ad@x_prev.T+Bd@u.T
+    x=Ad@x_prev+Bd@u.T
     
     return x
