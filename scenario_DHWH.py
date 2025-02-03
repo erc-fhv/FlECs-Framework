@@ -219,4 +219,6 @@ sim.connect(mp_contr, dhwh_appartment1, ('on_of_dhwh1', 'state'), time_shifted=T
 times = pd.date_range('2021-01-01 00:00:00', '2021-01-07 00:00:00', freq='1min', tz='Europe/Berlin')
 # times = pd.date_range('2021-01-01 00:00:00', '2021-01-01 02:00:00', freq='1min', tz='Europe/Berlin')
 # sim.draw_exec_graph()
-sim.run(times)
+
+# sim.run(times)
+cProfile.run('sim.run(times)', f'restats_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.prof')

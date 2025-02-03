@@ -1,6 +1,7 @@
 import pyomo.environ as pyo
 from .forcasting import ForcastingProto
 from .opt_models.MILP_model_proto import MILPModelProto
+from pyomo.contrib.appsi.solvers import Highs
 
 class MPController():
     def __init__(self, name, n_periods, delta_t, pyo_solver_name='appsi_highs', return_forcast=False):
@@ -24,7 +25,7 @@ class MPController():
 
         self.return_forcast = return_forcast
 
-        self.solver = pyo.SolverFactory(pyo_solver_name)
+        self.solver = Highs() # pyo.SolverFactory(pyo_solver_name)
 
         # make Energy Community model
         self.model      = pyo.ConcreteModel()
