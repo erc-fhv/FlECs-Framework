@@ -26,7 +26,7 @@ from models.mp_controller.opt_models.energy_community import EC__Residual_Load_M
 from models.mp_controller.forcasting import Forcasting
 
 
-sim = Simulation(output_data_path=f'output/output_first_run_full_year_{datetime.datetime.now().strftime("%Y%m%d_%H%M")}.csv')
+sim = Simulation(output_data_path=f'output/output_{datetime.datetime.now().strftime("%Y%m%d_%H%M")}.csv')
 
 # Weather
 weather    = SynproWeather(name='weather')
@@ -77,6 +77,7 @@ sim.connect(building, controller, ('T_building', 'T_is'), time_shifted=True, ini
 # Battery storage
 battery_storage = BatteryStorage(
     name = 'battery_storage_1',
+    delta_t             = 60*15,  # s
     E_max               = 20000*3600, # J
     E_min               = 0*3600, # J
     E_0                 = 10000*3600, # J
@@ -185,7 +186,7 @@ sim.connect(mp_contr, battery_storage, ('P_el_of_bes', 'P_set'), time_shifted=Tr
 
 
 # times = pd.date_range('2021-01-01 00:00:00', '2021-01-01 23:59:00', freq='1min', tz='Europe/Berlin')
-# times = pd.date_range('2021-01-01 00:00:00', '2021-12-31 23:59:00', freq='1min', tz='Europe/Berlin')
-times = pd.date_range('2021-01-01 00:00:00', '2021-02-01 00:00:00', freq='1min', tz='Europe/Berlin')
+times = pd.date_range('2021-01-01 00:00:00', '2021-12-31 23:59:00', freq='1min', tz='Europe/Berlin')
+# times = pd.date_range('2021-01-01 00:00:00', '2021-02-01 00:00:00', freq='1min', tz='Europe/Berlin')
 
 sim.run(times)
