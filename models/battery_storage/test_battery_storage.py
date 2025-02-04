@@ -27,8 +27,8 @@ def test_step_normal_charge():
                  P_max_discharge     =             2, # W
                  self_discharge_rate =             0 # 1/s
     )
-    output = batterystorage.step(1, -2.)
-    assert np.isclose(output['P_grid'], -2.)
+    output = batterystorage.step(1, 2.)
+    assert np.isclose(output['P_grid'], 2.)
     assert np.isclose(output['E'],      4.*3600)
 
 def test_step_normal_discharge():
@@ -44,8 +44,8 @@ def test_step_normal_discharge():
                  P_max_discharge     =             2, # W
                  self_discharge_rate =             0 # 1/s
     )
-    output = batterystorage.step(1, 2.)
-    assert np.isclose(output['P_grid'], 2.)
+    output = batterystorage.step(1, -2.)
+    assert np.isclose(output['P_grid'], -2.)
     assert np.isclose(output['E'],      1.*3600)
 
 def test_step_over_charge():
@@ -61,8 +61,8 @@ def test_step_over_charge():
                  P_max_discharge     =             2, # W
                  self_discharge_rate =             0 # 1/s
     )
-    output = batterystorage.step(1, -2.)
-    assert np.isclose(output['P_grid'], -1.)
+    output = batterystorage.step(1, 2.)
+    assert np.isclose(output['P_grid'], 1.)
     assert np.isclose(output['E'],      5.*3600)
 
 def test_step_over_discharge():
@@ -78,8 +78,8 @@ def test_step_over_discharge():
                  P_max_discharge     =             2, # W
                  self_discharge_rate =             0 # 1/s
     )
-    output = batterystorage.step(1, 2.)
-    assert np.isclose(output['P_grid'], 1.)
+    output = batterystorage.step(1, -2.)
+    assert np.isclose(output['P_grid'], -1.)
     assert np.isclose(output['E'],      0.*3600)
 
 def test_step_charging_effiency():
@@ -95,8 +95,8 @@ def test_step_charging_effiency():
                  P_max_discharge     =             2, # W
                  self_discharge_rate =             0 # 1/s
     )
-    output = batterystorage.step(1, -2.)
-    assert np.isclose(output['P_grid'], -2)
+    output = batterystorage.step(1, 2.)
+    assert np.isclose(output['P_grid'], 2)
     assert np.isclose(output['E'], (1+2*0.8)*3600)
 
 def test_step_discharging_effiency():
@@ -112,7 +112,7 @@ def test_step_discharging_effiency():
                  P_max_discharge     =             2, # W
                  self_discharge_rate =             0 # 1/s
     )
-    output = batterystorage.step(1, 2.)
-    assert np.isclose(output['P_grid'], 2)
+    output = batterystorage.step(1, -2.)
+    assert np.isclose(output['P_grid'], -2)
     assert np.isclose(output['E'], (3-2/0.8)*3600)
     
