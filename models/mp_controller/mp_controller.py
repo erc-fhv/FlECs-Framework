@@ -6,7 +6,7 @@ from pyomo.contrib.appsi.solvers import Highs
 class MPController():
     def __init__(self, name, n_periods, delta_t, pyo_solver_name='appsi_highs', return_forcast=False):
         '''A model predicteve Controller utilizing MILP with pyomo. 
-        MILP Models can be added to the model via the add_model() method. Added modles need to follow a given structure. 
+        MILP Models can be added to the model via the add_model() method. Added models need to follow a given structure. 
         Please find examples for reference.
         Inputs and outputs get configured automatically based on the added models.
         
@@ -61,7 +61,8 @@ class MPController():
         # add components to the list of components
         self.components += [component]
         # Add constraints as a block to the EC model:
-        self.model.__setattr__(component.name, pyo.Block(rule=component.pyo_block_rule))
+        self.model.add_component(component.name, pyo.Block(rule=component.pyo_block_rule))
+        # self.model.__setattr__(component.name, pyo.Block(rule=component.pyo_block_rule))
         # append model inputs, outputs and shared values 
         self.inputs += [si+'_of_'+component.name for si in component.state_inputs]
         self.outputs += [o+'_of_'+component.name for o in component.controll_outputs]

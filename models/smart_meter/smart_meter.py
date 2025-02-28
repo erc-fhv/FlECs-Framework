@@ -38,4 +38,24 @@ class SmartMeter():
         resampled_data = ser.resample('15min').mean()
         
         return resampled_data
+    
+
+class ElectricityMeter():
+    def __init__(self, name):
+        self.name = name
+        self.delta_t = 60  # s
+
+        self.inputs = ['P_'] # P_ as list attribute (endswith '_')
+        self.outputs = ['P_grid']
+
+        self.reccords = []
+
+    def step(self, time, P_):
+        P_grid = sum(P_)
+        return {'P_grid': P_grid}
+
+    def retrieve_data(self) -> pd.Series:
+        '''retrieve the quarter hourly Energy as pd.Series
+        Empty series is returned as its not a smart meter'''
+        return pd.Series([], name=self.name)
         

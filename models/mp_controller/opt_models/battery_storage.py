@@ -37,9 +37,10 @@ class BES_MILP_model():
     def pyo_block_rule(self, block):
         model = block.model()
 
+        # Inputs
         block.E_BES_0   = pyo.Param(mutable=True, domain=pyo.NonNegativeReals, validate=lambda _, E: self.E_min <= E and E <= self.E_max) # J
 
-        # Variables
+        # Variables / Outputs
         block.E         = pyo.Var(model.timepoints, domain=pyo.NonNegativeReals, bounds=(self.E_min, self.E_max)) # J
         block.P_el      = pyo.Var(model.periods, domain=pyo.Reals) # Electrical Power in W (feed in = positive, consumption = negative)
 
