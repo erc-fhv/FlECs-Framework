@@ -5,7 +5,7 @@ The underlying framework for the cosimulation is SimPlEC.
 
 # Overview
 The following figure shows the structure of the framework based on some example models and scenarios.
-![Overview](.doc/overview.svg?raw=true "Overview")
+![Overview](.doc/Overview.svg?raw=true "Overview")
 
 # Getting startet
 - create a venv with python 3.13
