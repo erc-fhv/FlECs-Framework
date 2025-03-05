@@ -21,11 +21,10 @@ class TESModel():
 
         Inputs
         ---------
-        dot_m_i_DHW : float, fresh water mass flow input from domestic hot water usage in kg/s
         dot_m_o_DHW : float, mass flow output from domestic hot water usage in kg/s
-        T_i_DHW : float, temperature of mass flow input from domestic hot water usage in K
+        T_i_DHW : float, temperature of mass flow input from domestic hot water usage in °C
         state : binary, variable controlling the heating element (no unit)
-        T_inf : float, temperature of surrounding in K
+        T_inf : float, temperature of surrounding in °C
 
         Outputs
         ---------

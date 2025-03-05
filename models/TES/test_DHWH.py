@@ -28,7 +28,7 @@ def test_initialization(mocked_TES_model):
     """
     model = mocked_TES_model
     assert model.name == "TestDHWH"
-    assert model.x[0][3] ==  313.15 # Default thermal well temperature
+    assert model.x[6] ==  313.15 # Default thermal well temperature
     assert isinstance(model.inputs, list)
     assert isinstance(model.outputs, list)
 
@@ -40,12 +40,12 @@ def test_step_method_with_demand(mocked_TES_model):
     result = model.step(
         time=0,
         dot_m_o_DHW=0.1,
-        T_i_DHW=283.15,
-        T_inf=283.15,
+        T_i_DHW=10,
+        T_inf=10,
         state=0
     )
     assert "T_tw" in result
-    assert np.isclose(result["T_tw"], 313.03895963 - 273.15)
+    assert np.isclose(result["T_tw"], 313.03895963-273.15)
 
 def test_step_method_heating_without_demand(mocked_TES_model):
     """
@@ -55,8 +55,8 @@ def test_step_method_heating_without_demand(mocked_TES_model):
     result = model.step(
         time=0,
         dot_m_o_DHW=0,
-        T_i_DHW=283.15,
-        T_inf=283.15,
+        T_i_DHW=10,
+        T_inf=10,
         state=1
     )
     assert "T_tw" in result
@@ -70,8 +70,8 @@ def test_step_method_without_demand_heating(mocked_TES_model):
     result = model.step(
         time=0,
         dot_m_o_DHW=0,
-        T_i_DHW=283.15,
-        T_inf=283.15,
+        T_i_DHW=10,
+        T_inf=10,
         state=0
     )
     assert "T_tw" in result
