@@ -26,6 +26,7 @@ class DHW_MILP_model_Temp():
 
         # config info
         self.state_inputs     = ['T_tes_0'] # inputs to initialize the state, needs to be a Parameter of the pyo.Block
+        self.states           = ['T_tes']
         self.forcast_inputs   = ['dot_Q_demand'] # inputs for forecast values, needs to be a Parameter of the pyo.Block with index model.periods
         self.controll_outputs = ['on'] # outputs to the controller, needs to be a Variable of the pyo.Block with index model.periods
         self.shares           = ['P_el'] # connection to other variables (following egoistic sign logic, + is consumption, -is feedin) needs to be a pyo.Variable with index model.periods
@@ -80,6 +81,7 @@ class DHW_MILP_model():
 
         # config info
         self.state_inputs     = ['E_tes_0'] # inputs to initialize the state, needs to be a Parameter of the pyo.Block
+        self.states           = ['E_tes']
         self.forcast_inputs   = ['dot_Q_demand'] # inputs for forecast values, needs to be a Parameter of the pyo.Block with index model.periods
         self.controll_outputs = ['on'] # outputs to the controller, needs to be a Variable of the pyo.Block with index model.periods
         self.shares           = ['P_el'] # connection to other variables (following egoistic sign logic, + is consumption, -is feedin) needs to be a pyo.Variable with index model.periods

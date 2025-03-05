@@ -221,4 +221,4 @@ times = pd.date_range('2021-01-01 00:00:00', '2021-01-07 00:00:00', freq='1min',
 # sim.draw_exec_graph()
 
 # sim.run(times)
-cProfile.run('sim.run(times)', f'restats_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.prof')
+cProfile.run('sim.run(times)', f'temp/restats_{datetime.datetime.now().strftime("%Y%m%d_%H%M%S")}.prof')

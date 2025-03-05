@@ -1,5 +1,7 @@
 data/
 
+temp/
+
 .vscode
 .venv
 .pytest_cache

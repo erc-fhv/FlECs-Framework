@@ -30,6 +30,7 @@ class BES_MILP_model():
 
         # config info
         self.state_inputs     = ['E_BES_0'] # inputs to the state, needs to be a Parameter of the pyo.Block
+        self.states           = ['E']
         self.forcast_inputs   = [] # inputs for forecast values, needs to be a Parameter of the pyo.Block with index model.periods
         self.controll_outputs = ['P_el'] # outputs to the controller, needs to be a Variable of the pyo.Block with index model.periods
         self.shares           = ['P_el'] # connection to other variables (following egoistic sign logic, + is consumption, -is feedin) needs to be a pyo.Variable with index model.periods
