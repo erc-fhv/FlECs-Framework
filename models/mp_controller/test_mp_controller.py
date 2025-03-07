@@ -1,6 +1,7 @@
 from models.mp_controller.mp_controller import MPController
 from models.mp_controller.opt_models.battery_storage import BES_MILP_model
 from models.mp_controller.opt_models.energy_community import EC__Residual_Load_MILP_model
+from models.mp_controller.opt_models.objective import Objective
 from models.mp_controller.forcasting import Forcasting
 import pyomo.environ as pyo
 
@@ -28,11 +29,15 @@ def test_MPController_add_model():
     assert cm in mpc.components
     assert hasattr(mpc.model, 'comp')
     assert isinstance(mpc.model.comp, pyo.Block)
-    assert 'a_of_comp' in mpc.inputs
+    assert 'comp.a' in mpc.inputs
 
 def test_simple_scenario():
     ctr = MPController('mpc', n_periods=3,
                        delta_t=1)
+    # objective
+    objective = Objective('objective', objective='self-consumption')
+    ctr.add_model(objective)
+
     # EC
     ec = EC__Residual_Load_MILP_model()
     ctr.add_model(ec)
@@ -63,14 +68,19 @@ def test_simple_scenario():
                          eta_dis=1)
     ctr.add_model(bes)
 
-    outputs = ctr.step(1, E_BES_0_of_BES=2)
+    outputs = ctr.step(1, **{'BES.E_BES_0':2})
 
-    assert 'P_el_of_BES' in outputs
-    assert outputs['P_el_of_BES'] == -1.
+    assert 'BES.P_el' in outputs
+    assert outputs['BES.P_el'] == -1.
 
 def test_forcaster_integration():
     ctr = MPController('mpc', n_periods=3,
                        delta_t=1)
+    
+    # objective
+    objective = Objective('objective', objective='self-consumption')
+    ctr.add_model(objective)
+
     # EC
     ec = EC__Residual_Load_MILP_model()
     ctr.add_model(ec)
@@ -103,14 +113,19 @@ def test_forcaster_integration():
                          eta_dis=1)
     ctr.add_model(bes)
 
-    outputs = ctr.step(1, E_BES_0_of_BES=2, data=[1, 0, 0])
+    outputs = ctr.step(1, **{'BES.E_BES_0':2, 'EC.forecast.data':[1, 0, 0]})
 
-    assert outputs['P_el_of_BES'] == -1.
+    assert outputs['BES.P_el'] == -1.
 
 
 def test_complete_scenario():
     ctr = MPController('mpc', n_periods=3,
                        delta_t=1)
+    
+    # objective
+    objective = Objective('objective', objective='self-consumption')
+    ctr.add_model(objective)
+    
     # EC
     ec = EC__Residual_Load_MILP_model()
     ctr.add_model(ec)
@@ -133,21 +148,22 @@ def test_complete_scenario():
                          eta_dis=1)
     ctr.add_model(bes)
 
-    outputs = ctr.step(1, E_BES_0_of_BES=2, P_ec=1)
-    assert outputs['P_el_of_BES'] == 0.
+    inp = {'BES.E_BES_0':2, 'EC.forecast.P_ec':1}
+    outputs = ctr.step(1, **inp)
+    assert outputs['BES.P_el'] == 0.
 
-    outputs = ctr.step(2, E_BES_0_of_BES=2, P_ec=1)
-    assert outputs['P_el_of_BES'] == 0.
+    outputs = ctr.step(2, **inp)
+    assert outputs['BES.P_el'] == 0.
 
-    outputs = ctr.step(3, E_BES_0_of_BES=2, P_ec=1)
-    assert outputs['P_el_of_BES'] == 0.
+    outputs = ctr.step(3, **inp)
+    assert outputs['BES.P_el'] == 0.
 
-    outputs = ctr.step(4, E_BES_0_of_BES=2, P_ec=1)
-    assert outputs['P_el_of_BES'] == -1.
+    outputs = ctr.step(4, **inp)
+    assert outputs['BES.P_el'] == -1.
 
-    outputs = ctr.step(5, E_BES_0_of_BES=1, P_ec=1)
-    assert outputs['P_el_of_BES'] == -1.
+    outputs = ctr.step(5, **{'BES.E_BES_0':1, 'EC.forecast.P_ec':1})
+    assert outputs['BES.P_el'] == -1.
 
-    outputs = ctr.step(5, E_BES_0_of_BES=0, P_ec=1)
-    assert outputs['P_el_of_BES'] == 0.
+    outputs = ctr.step(5, **{'BES.E_BES_0':0, 'EC.forecast.P_ec':1})
+    assert outputs['BES.P_el'] == 0.
 
