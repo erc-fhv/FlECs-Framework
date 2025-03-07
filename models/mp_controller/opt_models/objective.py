@@ -20,8 +20,10 @@ class Objective():
 
         # config info
         self.state_inputs     = [] # inputs to the state, needs to be a Parameter of the pyo.Block
+        self.inputs     = [] # inputs to the state, needs to be a Parameter of the pyo.Block
         self.forcast_inputs   = [] # inputs for forecast values, needs to be a Parameter of the pyo.Block with index model.periods
-        self.controll_outputs = [] # outputs to the controller, needs to be a Variable of the pyo.Block with index model.periods
+        self.control_outputs = ['P_el'] # outputs to the controller, needs to be a Variable of the pyo.Block with index model.periods
+        self.outputs = ['P_el'] # outputs to the controller, needs to be a Variable of the pyo.Block with index model.periods
         self.shares           = ['P_el'] # connection to other variables (following egoistic sign logic, + is consumption, -is feedin) needs to be a pyo.Variable with index model.periods
 
         match objective:
@@ -51,7 +53,11 @@ class Objective():
         
     def _self_consumption_block_rule_w_slack(self, block):
         model = block.model()
+        # Shared Variables
         block.P_el          = pyo.Var(model.periods, domain=pyo.Reals) # Electrical Power in W (feed in = positive, consumption = negative)
+        block.slack         = pyo.Var(model.periods, domain=pyo.Reals) # Slack Variable in W
+        
+        # Helper Variables
         block.P_resid_plus  = pyo.Var(model.periods, domain=pyo.NonNegativeReals) # Residual Grid load W 
         block.P_resid_minus = pyo.Var(model.periods, domain=pyo.NonNegativeReals) # Residual Grid load W
 
@@ -61,4 +67,4 @@ class Objective():
         
         @block.Objective(sense=pyo.minimize)
         def objective_rule(b):
-            return pyo.quicksum(b.P_resid_plus[p]+b.P_resid_minus[p] for p in model.periods)
+            return pyo.quicksum(b.P_resid_plus[p]+b.P_resid_minus[p] - block.slack[p] for p in model.periods)

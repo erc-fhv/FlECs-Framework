@@ -106,13 +106,7 @@ class MPController():
         if self.return_forcast:
             self.outputs += [complete_for_var]
 
-    def step(self, time, **inputs):
-        # TODO: create observers to manipulate the input variables
-        # initialize component states
-        for comp in self.components:
-            for state_name in comp.state_inputs:
-                self.model.find_component(comp.name).__setattr__(state_name, inputs[comp.name+self.sep+state_name])
-        
+    def step(self, time, **inputs):      
         # update forecasters with input data
         for pre, _, forecaster in self.forcasters:
             # map inputs for forcasters
@@ -123,6 +117,11 @@ class MPController():
         forecasts = {}
         for pre, for_var, forecaster in self.forcasters:
             forecasts[pre+for_var] = forecaster.get_forcast(time)
+
+        # initialize component states
+        for comp in self.components:
+            for state_name in comp.state_inputs:
+                self.model.find_component(comp.name).__setattr__(state_name, inputs[comp.name+self.sep+state_name])
 
         # initialize component with forecasts
         for comp in self.components:
@@ -147,17 +146,17 @@ class MPController():
                 outputs[comp.name+self.sep+out_name] = pyo.value(pyo_comp.__getattribute__(out_name)[0])
                 # outputs[out_name+'_of_'+comp.name] = pyo.value(pyo_comp.__getattribute__(out_name)[0])
 
-        if self.return_forcast: # TODO: add to output!
+        if self.return_forcast:
             outputs.update(forecasts)
 
-        if self.return_future_control_output: # TODO: add to output!
+        if self.return_future_control_output: 
             for comp in self.components:
                 pyo_comp = self.model.find_component(comp.name)
                 for out_name in comp.controll_outputs:
                     # outputs[out_name+'_of_'+comp.name+ '_future'] = [pyo.value(pyo_comp.__getattribute__(out_name)[i]) for i in self.model.periods]
                     outputs[comp.name+self.sep+out_name+'_future'] = [pyo.value(pyo_comp.__getattribute__(out_name)[i]) for i in self.model.periods]
 
-        if self.return_future_state: # TODO: add to output!
+        if self.return_future_state:
             for comp in self.components:
                 pyo_comp = self.model.find_component(comp.name)
                 if hasattr(comp, 'states'):
