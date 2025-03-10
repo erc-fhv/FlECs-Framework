@@ -2,6 +2,8 @@ import pyomo.environ as pyo
 from .forcasting import ForcastingProto
 from .opt_models.MILP_model_proto import MILPModelProto
 from pyomo.contrib.appsi.solvers.highs import Highs
+from pyomo.contrib.appsi.solvers.gurobi import Gurobi
+
 
 class MPController():
     def __init__(self, name, n_periods, delta_t, pyo_solver_name='appsi_highs', sep='.', return_forcast=False, return_future_control_output=False, return_future_state=False):
@@ -31,7 +33,9 @@ class MPController():
         self.return_future_state = return_future_state
         self.return_future_control_output = return_future_control_output
 
-        self.solver = Highs() # pyo.SolverFactory(pyo_solver_name)
+        # self.solver = Highs() # 
+        self.solver = pyo.SolverFactory(pyo_solver_name)
+        # self.solver = Gurobi()
 
         # make Energy Community model
         self.model      = pyo.ConcreteModel()
@@ -136,7 +140,7 @@ class MPController():
                     opt_forc_attr.__setitem__(p, forec_values[p])
 
         self.model.pprint()
-        solver_outpt = self.solver.solve(self.model)#, tee=True)
+        solver_outpt = self.solver.solve(self.model, tee=True)
 
         # get outputs from models
         outputs = {}
