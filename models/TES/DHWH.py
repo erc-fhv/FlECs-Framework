@@ -1,8 +1,10 @@
 import numpy as np
 from models.TES.TES_logic import logic_heat_transfer
+from collections import deque
+from statistics import mean
 
 class TESModel():
-    def __init__(self, name, delta_t=60, V=0.1, d=400, N=10, U=0.766, k_1=8.2, P_el_nom=2000, h_he=300, T0=[40., 40., 40., 40., 40., 40., 40., 40., 40., 40.]) -> None:
+    def __init__(self, name, delta_t=60, V=0.1, d=400, N=10, U=0.766, k_1=8.2, P_el_nom=2000, h_he=300, T0=[40., 40., 40., 40., 40., 40., 40., 40., 40., 40.], T_max=80) -> None:
         ''''
         Thermal energy storage model with input from electric heating element and domestic hot water usage
 
@@ -33,7 +35,7 @@ class TESModel():
         '''
 
         self.inputs  = ['dot_m_o_DHW', 'T_i_DHW', 'state', 'T_inf']
-        self.outputs = ['T_tw', 'T_0']
+        self.outputs = ['T_tw', 'T_0', 'P_el', 'P_el_mean_h']
         self.name    = name
 
         # Parameters
@@ -59,6 +61,9 @@ class TESModel():
         self.k_2       = 999999 # W/(m K)
         self.he_layers = int(np.ceil(h_he/(self.h/self.N))) # layers of the tank receiving heat from heating element directly
         self.P_el      = [0] * (self.N-self.he_layers) + [self.P_el_nom/self.he_layers] * self.he_layers # list of electrical power input of each layer in W
+
+        self.P_el_reccords = deque(maxlen=int(3600/self.delta_t))
+        self.T_max = T_max
         
 
     def step(self, time, dot_m_o_DHW, T_i_DHW, T_inf, state):
@@ -66,5 +71,12 @@ class TESModel():
         T_i     = [             0] + [0]*(self.N-2) + [T_i_DHW+273.15] # K
         dot_m_o = [   dot_m_o_DHW] + [0]*(self.N-2) + [             0] # kg/s
 
+        if self.x[6]-273.15 >= self.T_max:
+            state = 0
+
         self.x = logic_heat_transfer(dot_m_i, dot_m_o, self.dot_m, self.UA, self.A, self.B, self.u, self.C, self.N, self.c_p, self.x, T_inf+273.15, T_i, self.delta_t, self.x_l, self.k, self.A_l, self.k_1, self.k_2, self.P_el, state)
-        return {'T_tw':(self.x[6]-273.15), 'T_0':(self.x[0]-273.15)}
+        
+        P_el = state*self.P_el_nom
+        self.P_el_reccords.append(P_el)
+
+        return {'T_tw':(self.x[6]-273.15), 'T_0':(self.x[0]-273.15), 'P_el': P_el, 'P_el_mean_h': mean(self.P_el_reccords)}

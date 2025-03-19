@@ -2,9 +2,24 @@ import pandas as pd
 from pathlib import Path
 
 class Household():
-    def __init__(self, name, lpg_dir):
+    def __init__(self, name, lpg_dir, resample_dot_m_ww=False):
         '''
         Specifies a household/user from a LoadProfileGenerator results directory
+
+        Parameters
+        ----------
+        name : Name of the model
+        lpg_dir : directory of the LoadProfileGenerator data (results directory, e.g.: '.../loadprofilegenerator/CHR41 Family with 3 children, both at work/Results')
+        
+        Inputs:
+        -------
+        None
+
+        Outputs:
+        --------
+        P_el : electrical Power in W
+        dot_m_ww : mass flow of hot water in kg/s
+        dot_Q_gain_int : internal heat gains in W
         '''
         self.name = name
         self.dir = Path(lpg_dir)
@@ -22,8 +37,10 @@ class Household():
         dot_Q_gain_int.index = pd.to_datetime(dot_Q_gain_int.index, format="%d.%m.%Y %H:%M").tz_localize(tz='Etc/GMT-1').tz_convert('Europe/Berlin')
         dot_Q_gain_int = dot_Q_gain_int.rename({'Sum [kWh]': 'dot_Q_gain_int'}, axis=1)/0.25*1000  # kWh/15min ~> W
 
+        if resample_dot_m_ww:
+            dot_m_ww = dot_m_ww.resample('h').mean()
         
-        self.df = pd.concat([P_el, dot_m_ww, dot_Q_gain_int], axis=1)
+        self.df = pd.concat([P_el, dot_m_ww, dot_Q_gain_int], axis=1).ffill(axis=0)
 
         self.inputs = []
         self.outputs = list(self.df.columns)

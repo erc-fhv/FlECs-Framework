@@ -241,7 +241,7 @@ class DHW_MILP_model_T_m_slack():
         # Helper Variables
         block.dot_m_on       = pyo.Var(model.periods, domain=pyo.Reals, bounds=(0,1))
         block.dot_m_demand_h = pyo.Var(model.periods, domain=pyo.Reals) # Consumed Energy from storage in W (consumption < 0 < heat gain)
-        block.T_tes     = pyo.Var(model.timepoints, domain=pyo.NonNegativeReals, bounds=(self.T_tes_min, self.T_tes_max)) # J
+        block.T_tes          = pyo.Var(model.timepoints, domain=pyo.NonNegativeReals, bounds=(self.T_tes_min, self.T_tes_max)) # J
         
         # Outputs
         block.on        = pyo.Var(model.periods, domain=pyo.Boolean) # 0/1

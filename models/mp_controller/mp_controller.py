@@ -4,7 +4,7 @@ from .opt_models.MILP_model_proto import MILPModelProto
 from pyomo.contrib.appsi.solvers.highs import Highs
 
 class MPController():
-    def __init__(self, name, n_periods, delta_t, pyo_solver_name='appsi_highs', sep='.', return_forcast=False, return_future_control_output=False, return_future_state=False):
+    def __init__(self, name, n_periods, delta_t, pyo_solver_name='appsi_highs', sep='.', pprint_model_file=None, return_forcast=False, return_future_control_output=False, return_future_state=False):
         '''A model predicteve Controller utilizing MILP with pyomo. 
         MILP Models can be added to the model via the add_model() method. Added models need to follow a given structure. 
         Please find examples for reference.
@@ -14,6 +14,8 @@ class MPController():
         ----------
         n_periods : int, length of optimization horizon
         delta_t : int, timedelta of the controller in s
+        sep : seperator of nested variable names, default '.'
+        pprint_model_file : None or Str, default None, Prettyprint the milp model to desired path on first execution
         pyo_solver_name : str, name of a pyomo solver (passed to pyo.SolverFactory)
         return_forcast : bool, return the forcast values as outputs of the controller model
         '''
@@ -26,6 +28,7 @@ class MPController():
         self.shared_vars = set()
 
         self.sep = sep
+        self.pprint_model_file = pprint_model_file
 
         self.return_forcast = return_forcast
         self.return_future_state = return_future_state
@@ -42,6 +45,8 @@ class MPController():
 
         self.components = [] # list of components that get added via add_model (they need to follow a specific syntax! see examples)
         self.forcasters = [] # list of forcasters that get added via add_model (they need to follow a specific syntax! see examples)    
+
+        self.is_first_execution = True
 
     def add_model(self, component:MILPModelProto):
         '''add a model which needs to follow the given structure, see the examples'''
@@ -104,7 +109,7 @@ class MPController():
 
         # modify outputs
         if self.return_forcast:
-            self.outputs += [complete_for_var]
+            self.outputs += [complete_for_var+'_future']
 
     def step(self, time, **inputs):      
         # update forecasters with input data
@@ -135,7 +140,10 @@ class MPController():
                 for p in self.model.periods:
                     opt_forc_attr.__setitem__(p, forec_values[p])
 
-        self.model.pprint()
+        if self.is_first_execution and self.pprint_model_file:
+            with open(self.pprint_model_file, 'w') as output_file:
+                self.model.pprint(output_file)
+        self.is_first_execution = False
         solver_outpt = self.solver.solve(self.model)#, tee=True)
 
         # get outputs from models
@@ -147,7 +155,7 @@ class MPController():
                 # outputs[out_name+'_of_'+comp.name] = pyo.value(pyo_comp.__getattribute__(out_name)[0])
 
         if self.return_forcast:
-            outputs.update(forecasts)
+            outputs.update({k+'_future': v for k, v in forecasts.items()})
 
         if self.return_future_control_output: 
             for comp in self.components:
