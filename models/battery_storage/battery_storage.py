@@ -1,3 +1,5 @@
+from collections import deque
+from statistics import mean
 
 class BatteryStorage:
     def __init__(self, 
@@ -13,7 +15,7 @@ class BatteryStorage:
                  self_discharge_rate =        2.e-8 # 1/s
                  ) -> None:
         '''
-        Storage model with charging, discharging efficiencys and selfdischarge
+        Storage model with charging, discharging efficiencies and selfdischarge
 
         Parameters
         ----------
@@ -34,11 +36,12 @@ class BatteryStorage:
         Outputs
         ----------
         P_grid : Actual Grid Power in W
+        P_grid_mean_h : Hourly mean of grid power in W
         E : Energy content in storage in J
         '''
 
         self.inputs  = ['P_set']
-        self.outputs = ['P_grid', 'E']
+        self.outputs = ['P_grid', 'E', 'P_grid_mean_h']
         self.name    = name
 
         # Parameters
@@ -53,6 +56,7 @@ class BatteryStorage:
 
         # State
         self.E         = E_0  # J
+        self.P_grid_reccords = deque(maxlen=int(3600/self.delta_t))
 
     def step(self, time, P_set):
         '''
@@ -80,6 +84,7 @@ class BatteryStorage:
         # apply self discharge
         self.E = (self.E-self.E_min)*(1-self.self_discharge_rate*self.delta_t) + self.E_min
 
-        return {'P_grid': P_grid, 'E': self.E}
+        self.P_grid_reccords.append(P_grid) 
+        return {'P_grid': P_grid, 'E': self.E, 'P_grid_mean_h': mean(self.P_grid_reccords)}
 
 

@@ -32,6 +32,8 @@ class TESModel():
         ---------
         T_tw : float, temperature in layer of thermal well in °C (same layer as heating element ends)
         T_0 : float, temperature in top layer in °C
+        P_el : float, electric power consumption in W
+        P_el_mean_h : float hourly mean of electric power consumption in W
         '''
 
         self.inputs  = ['dot_m_o_DHW', 'T_i_DHW', 'state', 'T_inf']

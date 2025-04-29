@@ -54,6 +54,43 @@ def test_persistence_forecasting_delay():
     assert fc.get_forcast(1) == [2., 3., 4.]
 
 
+###################
+# PersistenceResidualLoadForcasting
+###################
+def test_persistence_residual_load_forcasting():
+    fc = Forcasting('persistence_residual_load')
+    fc.set_forcast_length(24)
+    fc.set_delta_t(3600)
+
+
+    times = pd.date_range('2021-07-01 00:00:00', periods=10, freq='1h', tz='Europe/Berlin')
+    values = np.random.random(times.shape)
+
+    for t, v in zip(times, values):
+        fc.set_data(t, v, [v/2])
+
+    # make prediction for next day, there should be 10 vlaues in the forecast, the rest should be zero (default)
+    forecast = fc.get_forcast(pd.to_datetime('2021-07-02 00:00:00').tz_localize('Europe/Berlin'))
+    expected_forecast = np.full((24), 0, dtype=float)
+    expected_forecast[:10] = values/2
+
+    np.testing.assert_allclose(forecast, expected_forecast), 'forecast unexpected'
+
+    # longer test
+    times = pd.date_range('2021-07-01 00:00:00', periods=40, freq='1h', tz='Europe/Berlin')
+    values = np.random.random(times.shape)
+
+    for t, v in zip(times, values):
+        fc.set_data(t, v, [v/2])
+
+    # make prediction for next day, forecast should be complete
+    forecast = fc.get_forcast(pd.to_datetime('2021-07-02 00:00:00').tz_localize('Europe/Berlin'))
+    expected_forecast = np.full((24), 0, dtype=float)
+    expected_forecast[:24] = (values/2)[:24]
+
+    assert np.isclose(forecast, expected_forecast).all(), 'forecast unexpected'
+
+
 ####################
 # persistence_residual_load_smartmeter
 ####################

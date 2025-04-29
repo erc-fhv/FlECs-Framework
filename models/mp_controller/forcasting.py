@@ -67,24 +67,28 @@ class GenericPersistenceForcasting():
 
 @Forcasting.register('persistence_residual_load')
 class PersistenceResidualLoadForcasting():
-    def __init__(self, init_val=np.nan, delay=1):
+    def __init__(self, init_val=np.nan):
         self.inputs = ['P_tot', 'P_flex_']
         self.init_val = init_val
-        self.delay = delay
+        
+        self.ser = pd.Series()
 
     def get_forcast(self, time) -> list:
-        return self.ser.loc[:self.periods-1].values.tolist()
+        index = pd.date_range(start=time, periods=self.periods, freq=f'{self.delta_t}s')
+        return [self.ser.get(i, default=0) for i in index]
 
     def set_data(self, time, P_tot, P_flex_) -> None:
         P_flex = sum(P_flex_)
-        P_resid = P_tot - P_flex   # signs!!!?????????????????????????
-        self.ser = self.ser.shift(-1)
-        self.ser.loc[self.last_index] = P_resid
+        P_resid = P_tot - P_flex
+        
+        self.ser.loc[time + pd.Timedelta(1, 'day')] = P_resid # Store forecast 
+
+    def set_delta_t(self, delta_t:int):
+        self.delta_t = delta_t
     
     def set_forcast_length(self, n:int) -> None:
         self.periods = n
-        self.ser = pd.Series(data=np.full(self.delay+self.periods, self.init_val), index=range(self.delay+self.periods))
-        self.last_index = self.delay+self.periods-1
+
 
 
 @Forcasting.register('persistence_residual_load_smartmeter')

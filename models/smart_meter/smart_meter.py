@@ -79,7 +79,7 @@ class ElectricityMeter():
 class SimpleSmartMeter():
     def __init__(self, name):
         '''
-        A smart meter model which additionally computes the houly mean power
+        A smart meter model which additionally computes the hourly mean power
         
         Parameters
         ----------
@@ -98,12 +98,12 @@ class SimpleSmartMeter():
         self.delta_t = 60  # s
 
         self.inputs = ['P_'] # P_ as list attribute (endswith '_')
-        self.outputs = ['P_grid', 'P_grid_mean_h_neg', 'P_grid_mean_h']
+        self.outputs = ['P_grid', 'P_grid_mean_h']
 
         self.reccords = deque(maxlen=int(3600/self.delta_t))
 
     def step(self, time, P_):
         P_grid = sum(P_)
         self.reccords.append(P_grid)
-        return {'P_grid': P_grid, 'P_grid_mean_h': mean(self.reccords), 'P_grid_mean_h_neg': -mean(self.reccords)}
+        return {'P_grid': P_grid, 'P_grid_mean_h': mean(self.reccords)}
         
