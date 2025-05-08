@@ -1,6 +1,6 @@
 # FlECs-Framework
 
-This Framework can be used to simulate and asses different control strategies for flexibilities in the energy systems in particular energy communities, it is written in python.
+This Framework can be used to simulate and assess different control strategies for flexibilities in the energy systems in particular energy communities, it is written in python.
 The underlying framework for the cosimulation is SimPlEC. 
 
 # Overview
