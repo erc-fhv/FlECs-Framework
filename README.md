@@ -43,3 +43,6 @@ All physical units which are passed in between models should be in their base SI
 # Sign Convention
 All consumption from the grid (heat network, ... ) as seen form a component is positive (egoistic sign convention).
 
+
+# Acknowledgments
+We gratefully acknowledge the financial support from the Austrian Research Promotion Agency FFG for the Hub4FlECs project (COIN FFG 898053), which provided funding for the development of the software provided. https://projekte.ffg.at/projekt/4597880
